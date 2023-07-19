@@ -30,8 +30,13 @@ password = input("Input your password: ")
 
 # XMPP server connection with a socket.
 xmpp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-xmpp_socket = ssl.wrap_socket(xmpp_socket)
-xmpp_socket.connect((XMPP_SERVER, XMPP_PORT))
+
+# Instance of SSL context to connect.
+context = ssl.SSLContext(ssl.PROTOCOL_TLS)
+xmpp_socket = context.wrap_socket(xmpp_socket, server_hostname=XMPP_SERVER)
+
+# Actual socket connection.
+xmpp_socket.connect((XMPP_SERVER, int(XMPP_PORT)))
 
 # Session started message.
 auth_message = build_auth_message(jid, password)
