@@ -28,11 +28,15 @@ XMPP_PORT = os.getenv("XMPP_PY_CHAT_PORT")
 jid = input("Input your JID: ")
 password = input("Input your password: ")
 
+# Instance of SSL context to connect.
+context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+
+# Additional security options.
+context.options |= ssl.OP_NO_SSLv2
+context.options |= ssl.OP_NO_SSLv3
+
 # XMPP server connection with a socket.
 xmpp_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# Instance of SSL context to connect.
-context = ssl.SSLContext(ssl.PROTOCOL_TLS)
 xmpp_socket = context.wrap_socket(xmpp_socket, server_hostname=XMPP_SERVER)
 
 # Actual socket connection.
