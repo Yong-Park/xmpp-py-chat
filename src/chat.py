@@ -9,12 +9,14 @@ from client import Client
 from utils.register_new_user import register_new_user
 
 if (__name__ == "__main__"):
-    
+
+    print("\n- * - XMPP Chat - * -\n")
+
     selected_option = str()
 
     while (selected_option != "3"):
 
-        print("\n- * - XMPP Chat - * -\n\nOptions:\n\t1. Sign up to XMPP Chat.\n\t2. Sign in to XMPP Chat.\n\t3. Close XMPP Chat.\n\t4. Delete account on XMPP Chat.\n")
+        print("Main Options:\n\t1. Sign up to XMPP Chat.\n\t2. Sign in to XMPP Chat.\n\t3. Close XMPP Chat.\n\t4. Delete account on XMPP Chat.\n")
         selected_option = input("Please input the option you want to execute: ")
 
         if (selected_option == "1"):
@@ -25,8 +27,8 @@ if (__name__ == "__main__"):
             print(status_message)
 
         if (selected_option == "2"):
-            jid = input("\nInput your new JID please: ")
-            password = input("Now please input your new password: ")
-            xmpp_client = Client(jid, password)
+            jid = input("\nInput your JID please: ")
+            password = input("Now please input your password: ")
+            xmpp_client = Client(jid, password, option=1)
             xmpp_client.connect(disable_starttls=True, use_ssl=False)
             xmpp_client.process(forever=False)
