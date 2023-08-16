@@ -8,6 +8,7 @@ Proyecto 1 - Protocolo XMPP
 # Important libraries to use.
 import slixmpp
 import asyncio
+from aioconsole import ainput
 from slixmpp.exceptions import IqError, IqTimeout
 
 # Client class definition.
@@ -125,3 +126,29 @@ class Client(slixmpp.ClientXMPP):
         self.send_presence_subscription(contact_jid)
         print("Your request has been properly sent.")
         await self.get_roster()
+
+    # Async function that sends a DM.
+    async def send_dm(self):
+
+        # Input for the JID to send a DM to.
+        dm_to_jid = input("Please input the JID of the user you want to send a DM: ")
+        self.current_chatting_jid = dm_to_jid
+
+        # Show information about the chat.
+        print(f"\nChatting with {dm_to_jid}.\nType \"exit\" to close the chat.\n")
+
+        # While loop to keep chatting.
+        while (True):
+
+            # Async input to wait for the user's message.
+            message = await ainput("Type your message: ")
+
+            # Message "exit" if user quits chatting.
+            if (message == "exit"):
+                self.current_chatting_jid = ""
+                break
+
+            # Send the message if it's not the "exit" keyword.
+            else:
+                print(f"{self.user_jid.split('@')[0]}: {message}")
+                self.send_message(mto=dm_to_jid, mbody=message, mtype='chat')
