@@ -32,7 +32,7 @@ class Client(slixmpp.ClientXMPP):
         while (self.is_user_connected):
 
             # Client's menu and option input.
-            print("Chat Options:\n\t1. Show all my contacts.\n\t2. Show a contact info.\n\t3. Send contact request.\n\t9. Sign out.\n")
+            print("Chat Options:\n\t1. Show all my contacts.\n\t2. Show a contact info.\n\t3. Send contact request.\n\t4. Send a DM.\n\t9. Sign out.\n")
             selected_option = input("Please input the option you want to execute: ")
 
             # Option to show all contacts.
