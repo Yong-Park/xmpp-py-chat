@@ -5,7 +5,7 @@ Santiago Taracena Puga (20017)
 Proyecto 1 - Protocolo XMPP
 """
 
-from client import Client
+from utils.client import Client
 from utils.register_new_user import register_new_user
 
 if (__name__ == "__main__"):
@@ -29,6 +29,6 @@ if (__name__ == "__main__"):
         if (selected_option == "2"):
             jid = input("\nInput your JID please: ")
             password = input("Now please input your password: ")
-            xmpp_client = Client(jid, password, option=1)
+            xmpp_client = Client(jid, password)
             xmpp_client.connect(disable_starttls=True, use_ssl=False)
             xmpp_client.process(forever=False)
