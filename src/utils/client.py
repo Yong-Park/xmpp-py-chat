@@ -42,12 +42,38 @@ class Client(slixmpp.ClientXMPP):
                 await self.show_all_contacts()
 
             # Option to show a specific contact.
-            if (selected_option == "2"):
+            elif (selected_option == "2"):
                 await self.show_contact_info()
 
             # Option to send a contact request to a user.
-            if (selected_option == "3"):
+            elif (selected_option == "3"):
                 await self.send_contact_request()
+
+            # Option to send a DM to a user.
+            elif (selected_option == "4"):
+                await self.send_dm()
+
+            # Option to send a message on a groupal chat.
+            elif (selected_option == "5"):
+                raise NotImplementedError()
+
+            # Option to change presence status and message.
+            elif (selected_option == "6"):
+                raise NotImplementedError()
+
+            # Option to send a file to a contact.
+            elif (selected_option == "7"):
+                raise NotImplementedError()
+
+            # Option to disconnect from the session.
+            elif (selected_option == "8"):
+                self.disconnect()
+                self.is_user_connected = False
+
+            # If no correct option was picked, it shows.
+            else:
+                print("\nYou have not picked a correct option.\n")
+
 
     # Async function to show all contacts.
     async def show_all_contacts(self):
