@@ -11,7 +11,7 @@ import asyncio
 from aioconsole import ainput
 from slixmpp.exceptions import IqError, IqTimeout
 
-# Client class definition.
+# Client class definition (with slixmpp.ClientXMPP).
 class Client(slixmpp.ClientXMPP):
 
     # Constructor method.
