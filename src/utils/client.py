@@ -18,7 +18,9 @@ class Client(slixmpp.ClientXMPP):
     def __init__(self, jid, password):
         super().__init__(jid=jid, password=password)
         self.logged_user = jid
+        self.current_chatting_jid = ""
         self.register_all_plugins()
+        self.register_all_handlers()
 
     # Async function that starts the client.
     async def start(self):
@@ -27,14 +29,14 @@ class Client(slixmpp.ClientXMPP):
         self.is_user_connected = True
         asyncio.create_task(self.process_action())
 
-    # Async function to display the client"s menu and process actions.
+    # Async function to display the client's menu and process actions.
     async def process_action(self):
 
         # While loop to display the menu while the user is connected.
         while (self.is_user_connected):
 
             # Client"s menu and option input.
-            print("Chat Options:\n\t1. Show all my contacts.\n\t2. Show a contact info.\n\t3. Send contact request.\n\t4. Send a DM.\n\t9. Sign out.\n")
+            print("Chat Options:\n\t1. Show all my contacts.\n\t2. Show a contact info.\n\t3. Send contact request.\n\t4. Send a DM.\n\t8. Sign out.\n")
             selected_option = input("Please input the option you want to execute: ")
 
             # Option to show all contacts.
@@ -75,6 +77,20 @@ class Client(slixmpp.ClientXMPP):
                 print("\nYou have not picked a correct option.\n")
 
 
+    # Async function that handles message reception.
+    async def receive_message(self, message):
+
+        # Check it the message is actually a chat message.
+        if (message["type"] == "chat"):
+
+            emitter = message["from"]
+            print("EMITTER", emitter)
+
+            if (emitter == self.current_chatting_jid):
+                print(f"{emitter}: {message['body']}")
+            else:
+                print(f"New message from {emitter}.")
+
     # Async function to show all contacts.
     async def show_all_contacts(self):
 
@@ -93,19 +109,25 @@ class Client(slixmpp.ClientXMPP):
             if (contact == self.boundjid.bare):
                 continue
 
-            # Show contact"s JID.
+            # Show contact's JID.
             print(f"\nContact JID: {contact}")
 
-            # Iterating through the contact"s information.
+            # Predetermined values.
+            presence_value = "Available"
+            status = "None"
+
+            # Iterating through the contact's information.
             for _, presence in client_roster.presence(contact).items():
 
-                # Show contact"s presence.
-                presence_value = presence["show"] or "Connected from Santiago's chat!"
-                print(f"Contact presence: {presence_value}")
+                # Show contact's presence.
+                presence_value = presence["show"] or "Available"
 
-                # Show contact"s status.
+                # Show contact's status.
                 status = presence["status"] or "None"
-                print(f"Contact status: {status}")
+
+            # Show contact's results.
+            print(f"Contact presence: {presence_value}")
+            print(f"Contact status: {status}")
 
     # Async function to show a contact by JID.
     async def show_contact_info(self):
@@ -212,3 +234,17 @@ class Client(slixmpp.ClientXMPP):
         # Plugin used to access out of band data.
         self.register_plugin("xep_0066")
         self.register_plugin("xep_0363")
+
+    # Function that registers all needed handlers.
+    def register_all_handlers(self):
+
+        # Session start event handler.
+        self.add_event_handler("session_start", self.start)
+
+        # Message event handler.
+        self.add_event_handler("message", self.receive_message)
+
+        self.add_event_handler('disco_items', self.print_rooms)
+        self.add_event_handler('groupchat_message', self.chatroom_message)
+        self.add_event_handler('presence', self.presence_handler)
+
