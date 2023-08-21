@@ -36,7 +36,7 @@ class Client(slixmpp.ClientXMPP):
         while (self.is_user_connected):
 
             # Client"s menu and option input.
-            print("Chat Options:\n\t1. Show all my contacts.\n\t2. Show a contact info.\n\t3. Send contact request.\n\t4. Send a DM.\n\t8. Sign out.\n")
+            print("Chat Options:\n\t1. Show all my contacts.\n\t2. Show a contact info.\n\t3. Send contact request.\n\t4. Send a DM.\n\t5. Send a group message.\n\t8. Sign out.\n")
             selected_option = input("Please input the option you want to execute: ")
 
             # Option to show all contacts.
@@ -57,7 +57,16 @@ class Client(slixmpp.ClientXMPP):
 
             # Option to send a message on a groupal chat.
             elif (selected_option == "5"):
-                raise NotImplementedError()
+
+                print("\nGroup Chat Options:\n\t1. Create group.\n\t2. Join group.\n\t3. Exit.\n")
+                group_option = input("Please input the option you want to execute: ")
+
+                if (group_option == "1"):
+                    group_to_create = input("Please input the group's name: ")
+                    await self.create_group(group_to_create)
+
+                elif (group_option == "3"):
+                    continue
 
             # Option to change presence status and message.
             elif (selected_option == "6"):
@@ -75,7 +84,6 @@ class Client(slixmpp.ClientXMPP):
             # If no correct option was picked, it shows.
             else:
                 print("\nYou have not picked a correct option.\n")
-
 
     # Async function that handles message reception.
     async def receive_message(self, message):
@@ -155,19 +163,25 @@ class Client(slixmpp.ClientXMPP):
                 # Contact has been found.
                 found = True
 
-                # Show contact"s JID.
+                # Show contact's JID.
                 print(f"\nContact JID: {contact}")
 
-                # Iterating through the contact"s information.
+                # Predetermined values.
+                presence_value = "Available"
+                status = "None"
+
+                # Iterating through the contact's information.
                 for _, presence in client_roster.presence(contact).items():
 
-                    # Show contact"s presence.
-                    presence_value = presence["show"] or "Logged from Santiago's chat!"
-                    print(f"Contact presence: {presence_value}")
+                    # Show contact's presence.
+                    presence_value = presence["show"] or "Available"
 
-                    # Show contact"s status.
+                    # Show contact's status.
                     status = presence["status"] or "None"
-                    print(f"Contact status: {status}")
+
+                # Show contact's results.
+                print(f"Contact presence: {presence_value}")
+                print(f"Contact status: {status}")
 
         # Text that shows if the contact was not found.
         if (not found):
@@ -209,6 +223,24 @@ class Client(slixmpp.ClientXMPP):
             else:
                 print(f"{self.user_jid.split('@')[0]}: {message}")
                 self.send_message(mto=dm_to_jid, mbody=message, mtype="chat")
+
+    # Async function to create a group chat.
+    async def create_group(self, group_name):
+        self.plugin["xep_0045"].join_muc(group_name, self.boundjid.user)
+        form = self.plugin["xep_0004"].make_form(ftype="submit", title="Group chat configuration")
+        form["muc#roomconfig_roomname"] = group_name
+        form["muc#roomconfig_persistentroom"] = "1"
+        form["muc#roomconfig_publicroom"] = "1"
+        form["muc#roomconfig_membersonly"] = "0"
+        form["muc#roomconfig_allowinvites"] = "0"
+        form["muc#roomconfig_enablelogging"] = "1"
+        form["muc#roomconfig_changesubject"] = "1"
+        form["muc#roomconfig_maxusers"] = "64"
+        form["muc#roomconfig_whois"] = "anyone"
+        form["muc#roomconfig_roomdesc"] = "Group created from Santiago's chat."
+        form["muc#roomconfig_roomowners"] = [self.boundjid.user]
+        await self.plugin["xep_0045"].set_room_config(group_name, config=form)
+        print(f"Group {group_name} has been created.")
 
     # Function that registers all needed plugins.
     def register_all_plugins(self):
