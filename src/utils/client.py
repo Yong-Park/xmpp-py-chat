@@ -92,7 +92,6 @@ class Client(slixmpp.ClientXMPP):
         if (message["type"] == "chat"):
 
             emitter = message["from"]
-            print("EMITTER", emitter)
 
             if (emitter == self.current_chatting_jid):
                 print(f"{emitter}: {message['body']}")
@@ -226,21 +225,54 @@ class Client(slixmpp.ClientXMPP):
 
     # Async function to create a group chat.
     async def create_group(self, group_name):
-        self.plugin["xep_0045"].join_muc(group_name, self.boundjid.user)
-        form = self.plugin["xep_0004"].make_form(ftype="submit", title="Group chat configuration")
-        form["muc#roomconfig_roomname"] = group_name
-        form["muc#roomconfig_persistentroom"] = "1"
-        form["muc#roomconfig_publicroom"] = "1"
-        form["muc#roomconfig_membersonly"] = "0"
-        form["muc#roomconfig_allowinvites"] = "0"
-        form["muc#roomconfig_enablelogging"] = "1"
-        form["muc#roomconfig_changesubject"] = "1"
-        form["muc#roomconfig_maxusers"] = "64"
-        form["muc#roomconfig_whois"] = "anyone"
-        form["muc#roomconfig_roomdesc"] = "Group created from Santiago's chat."
-        form["muc#roomconfig_roomowners"] = [self.boundjid.user]
-        await self.plugin["xep_0045"].set_room_config(group_name, config=form)
-        print(f"Group {group_name} has been created.")
+        try:
+            self.plugin["xep_0045"].join_muc(group_name, self.boundjid.user)
+            form = self.plugin["xep_0004"].make_form(ftype="submit", title="Group chat configuration")
+            form["muc#roomconfig_roomname"] = group_name
+            form["muc#roomconfig_persistentroom"] = "1"
+            form["muc#roomconfig_publicroom"] = "1"
+            form["muc#roomconfig_membersonly"] = "0"
+            form["muc#roomconfig_allowinvites"] = "0"
+            form["muc#roomconfig_enablelogging"] = "1"
+            form["muc#roomconfig_changesubject"] = "1"
+            form["muc#roomconfig_maxusers"] = "64"
+            form["muc#roomconfig_whois"] = "anyone"
+            form["muc#roomconfig_roomdesc"] = "Group created from Santiago's chat."
+            form["muc#roomconfig_roomowners"] = [self.boundjid.user]
+            await self.plugin["xep_0045"].set_room_config(group_name, config=form)
+            print(f"Group {group_name} has been created.")
+        except:
+            print("\nHa ocurrido un error creando la sala.\n")
+
+    # Async function to join a group chat.
+    async def join_group(self, group_name):
+
+        # Group name to send the message.
+        self.group = group_name
+        
+        # Method to join the group.
+        await self.plugin["xep_0045"].join_muc(room=group_name, nick=self.boundjid.user)
+
+        # Show information about the group.
+        print(f"\nChatting in {group_name}.\nType \"exit\" to close the chat.\n")
+
+        # While loop to keep chatting.
+        while (True):
+
+            # Async input to wait for the user's message.
+            message = await ainput("Type your message: ")
+
+            # Messsage "exit" if user quits chatting.
+            if (message == "exit"):
+                self.current_chatting_jid = ""
+                self.plugin["xep_0045"].leave_muc(room=group_name, nick=self.boundjid.user)
+                self.group = ""
+                break
+
+            # Send the message if it's not the "exit" keyword.
+            else:
+                print(f"{self.logged_user.split('@')[0]}: {message}")
+                self.send_message(mto=group_name, mbody=message, mtype="groupchat")
 
     # Function that registers all needed plugins.
     def register_all_plugins(self):
