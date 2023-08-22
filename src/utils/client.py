@@ -19,6 +19,7 @@ class Client(slixmpp.ClientXMPP):
         super().__init__(jid=jid, password=password)
         self.logged_user = jid
         self.current_chatting_jid = ""
+        self.group = ""
         self.register_all_plugins()
         self.register_all_handlers()
 
