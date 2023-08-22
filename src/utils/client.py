@@ -38,7 +38,7 @@ class Client(slixmpp.ClientXMPP):
         while (self.is_user_connected):
 
             # Client"s menu and option input.
-            print("\nChat Options:\n\t1. Show all my contacts.\n\t2. Show a contact info.\n\t3. Send contact request.\n\t4. Send a DM.\n\t5. Send a group message.\n\t6. Update your presence.\n\t8. Sign out.\n")
+            print("\nChat Options:\n\t1. Show all my contacts.\n\t2. Show a contact info.\n\t3. Send contact request.\n\t4. Send a DM.\n\t5. Send a group message.\n\t6. Update your presence.\n\t7. Send a file message.\n\t8. Sign out.\n")
             selected_option = input("Please input the option you want to execute: ")
 
             # Option to show all contacts.
@@ -222,13 +222,28 @@ class Client(slixmpp.ClientXMPP):
         # Check it the message is actually a chat message.
         if (message["type"] == "chat"):
 
-            emitter = str(message["from"])
-            actual_emitter = emitter.split("/")[0]
+            # Decoding and saving a file if the message contains it.
+            if (message["body"].startswith("file://")):
+                file_content = message["body"].split("://")
+                file_extension = file_content[1]
+                file_data = file_content[2]
+                decoded_file_data = base64.b64decode(file_data)
+                file_to_write = open(f"./files/received_file.{file_extension}", "wb")
+                file_to_write.write(decoded_file_data)
+                print(f"\n<!> {str(message['from']).split('/')[0]} has sent you a file: ./files/received_file.{file_extension}.\n")
 
-            if (actual_emitter == self.current_chatting_jid):
-                print(f"\n{actual_emitter}: {message['body']}")
+            # Any other text message that's not a file.
             else:
-                print(f"\n<!> New message from {actual_emitter}.\n")
+
+                # Message's emitter.
+                emitter = str(message["from"])
+                actual_emitter = emitter.split("/")[0]
+
+                # Printing the message or a notification of it.
+                if (actual_emitter == self.current_chatting_jid):
+                    print(f"\n\n{actual_emitter}: {message['body']}")
+                else:
+                    print(f"\n<!> New message from {actual_emitter}.\n")
 
     # Async function to handle user's presence.
     async def handle_presence(self, presence):
