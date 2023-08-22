@@ -229,6 +229,15 @@ class Client(slixmpp.ClientXMPP):
             else:
                 print(f"\nNew message from {actual_emitter}.")
 
+    # Async function to handle user's presence.
+    async def handle_presence(self, presence):
+
+        # Process to handle the accepted request.
+        if (presence["type"] == "subscribe"):
+            self.send_presence_subscription(pto=presence["from"], ptype="subscribed")
+            await self.get_roster()
+            print(f"\n<!> {presence['from']} has accepted your request.\n")
+
     # Async function to create a group chat.
     async def create_group(self, group_name):
         try:
@@ -339,7 +348,8 @@ class Client(slixmpp.ClientXMPP):
         # Message event handler.
         self.add_event_handler("message", self.receive_message)
 
-        self.add_event_handler('disco_items', self.print_rooms)
-        self.add_event_handler('groupchat_message', self.chatroom_message)
-        self.add_event_handler('presence', self.presence_handler)
+        # Presence request handler.
+        self.add_event_handler("presence", self.handle_presence)
 
+        # Group chat message handler.
+        self.add_event_handler("groupchat_message", self.chatroom_message)
