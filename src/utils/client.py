@@ -8,6 +8,7 @@ Proyecto 1 - Protocolo XMPP
 # Important libraries to use.
 import slixmpp
 import asyncio
+import base64
 from aioconsole import ainput
 
 # Client class definition (with slixmpp.ClientXMPP).
@@ -79,7 +80,7 @@ class Client(slixmpp.ClientXMPP):
 
             # Option to send a file to a contact.
             elif (selected_option == "7"):
-                raise NotImplementedError()
+                await self.send_file()
 
             # Option to disconnect from the session.
             elif (selected_option == "8"):
@@ -348,6 +349,25 @@ class Client(slixmpp.ClientXMPP):
         # Updating the user's presence.
         self.send_presence(pshow=presence, pstatus=description) 
         await self.get_roster() 
+
+    # Async function to send a file.
+    async def send_file(self):
+
+        # Inputs to get the info about the file that's about to be sent.
+        receptor = input("Please input the JID of the user you wanna send the file to: ")
+        file_path = input("Now please input the path of the file you wanna send: ")
+
+        # Splitting the file path to get the extension.
+        file_extension = file_path.split(".")[-1]
+
+        # Opening and reading the file.
+        file = open(file_path, "rb")
+        file_data = file.read()
+
+        # Sending the encoded file.
+        file_encoded_data = base64.b64encode(file_data).decode()
+        print("file_encoded_data", file_encoded_data)
+        self.send_message(mto=receptor, mbody=f"file://{file_extension}://{file_encoded_data}", mtype="chat")
 
     # Function that registers all needed plugins.
     def register_all_plugins(self):
