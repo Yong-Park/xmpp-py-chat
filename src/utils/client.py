@@ -9,7 +9,6 @@ Proyecto 1 - Protocolo XMPP
 import slixmpp
 import asyncio
 from aioconsole import ainput
-from slixmpp.exceptions import IqError, IqTimeout
 
 # Client class definition (with slixmpp.ClientXMPP).
 class Client(slixmpp.ClientXMPP):
@@ -237,6 +236,26 @@ class Client(slixmpp.ClientXMPP):
             self.send_presence_subscription(pto=presence["from"], ptype="subscribed")
             await self.get_roster()
             print(f"\n<!> {presence['from']} has accepted your request.\n")
+
+        # If there's not a presence requrest.
+        else:
+            if (self.is_user_connected):
+                if (presence["type"] == "available"):
+                    self.display_presence_message(presence, True)
+                elif (presence["type"] == "unavailable"):
+                    self.display_presence_message(presence, False)
+                else:
+                    self.display_presence_message(presence)
+
+    # Async function to process the display presence message.
+    async def display_presence_message(self, presence, available=None):
+        actual_boundjid = str(presence["from"]).split("/")[0]
+        if (self.boundjid.bare != actual_boundjid):
+            state = "available" if (available) else presence["show"] if (available is None) else "offline"
+            if (presence["status"] != ""):
+                print(f"\n<!> {actual_boundjid} is {state} with status {presence['status']}.\n")
+            else:
+                print(f"\n<!> {actual_boundjid} is {state}.\n")
 
     # Async function to create a group chat.
     async def create_group(self, group_name):
