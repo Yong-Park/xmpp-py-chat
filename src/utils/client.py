@@ -18,6 +18,7 @@ class Client(slixmpp.ClientXMPP):
         super().__init__(jid=jid, password=password)
         self.logged_user = jid
         self.current_chatting_jid = ""
+        self.is_user_connected = False
         self.group = ""
         self.register_all_plugins()
         self.register_all_handlers()
@@ -36,7 +37,7 @@ class Client(slixmpp.ClientXMPP):
         while (self.is_user_connected):
 
             # Client"s menu and option input.
-            print("Chat Options:\n\t1. Show all my contacts.\n\t2. Show a contact info.\n\t3. Send contact request.\n\t4. Send a DM.\n\t5. Send a group message.\n\t6. Update your presence.\n\t8. Sign out.\n")
+            print("\nChat Options:\n\t1. Show all my contacts.\n\t2. Show a contact info.\n\t3. Send contact request.\n\t4. Send a DM.\n\t5. Send a group message.\n\t6. Update your presence.\n\t8. Sign out.\n")
             selected_option = input("Please input the option you want to execute: ")
 
             # Option to show all contacts.
@@ -111,14 +112,14 @@ class Client(slixmpp.ClientXMPP):
             print(f"\nContact JID: {contact}")
 
             # Predetermined values.
-            presence_value = "Available"
+            presence_value = "Offline"
             status = "None"
 
             # Iterating through the contact's information.
             for _, presence in client_roster.presence(contact).items():
 
                 # Show contact's presence.
-                presence_value = presence["show"] or "Available"
+                presence_value = presence["show"] or "Offline"
 
                 # Show contact's status.
                 status = presence["status"] or "None"
@@ -157,14 +158,14 @@ class Client(slixmpp.ClientXMPP):
                 print(f"\nContact JID: {contact}")
 
                 # Predetermined values.
-                presence_value = "Available"
+                presence_value = "Offline"
                 status = "None"
 
                 # Iterating through the contact's information.
                 for _, presence in client_roster.presence(contact).items():
 
                     # Show contact's presence.
-                    presence_value = presence["show"] or "Available"
+                    presence_value = presence["show"] or "Offline"
 
                     # Show contact's status.
                     status = presence["status"] or "None"
@@ -226,7 +227,7 @@ class Client(slixmpp.ClientXMPP):
             if (actual_emitter == self.current_chatting_jid):
                 print(f"\n{actual_emitter}: {message['body']}")
             else:
-                print(f"\nNew message from {actual_emitter}.")
+                print(f"\n<!> New message from {actual_emitter}.\n")
 
     # Async function to handle user's presence.
     async def handle_presence(self, presence):
@@ -247,8 +248,8 @@ class Client(slixmpp.ClientXMPP):
                 else:
                     self.display_presence_message(presence)
 
-    # Async function to process the display presence message.
-    async def display_presence_message(self, presence, available=None):
+    # Function to process the display presence message.
+    def display_presence_message(self, presence, available=None):
         actual_boundjid = str(presence["from"]).split("/")[0]
         if (self.boundjid.bare != actual_boundjid):
             state = "available" if (available) else presence["show"] if (available is None) else "offline"
@@ -256,6 +257,16 @@ class Client(slixmpp.ClientXMPP):
                 print(f"\n<!> {actual_boundjid} is {state} with status {presence['status']}.\n")
             else:
                 print(f"\n<!> {actual_boundjid} is {state}.\n")
+
+    # Async function to notify a group's message.
+    async def message_received(self, message):
+
+        # Message emitter.
+        emitter = message["mucnick"]
+
+        # Notification process.
+        if (emitter != self.boundjid.user):
+            print(f"\n<!> {emitter} in {message['from']}: {message['body']}\n")
 
     # Async function to create a group chat.
     async def create_group(self, group_name):
@@ -371,4 +382,4 @@ class Client(slixmpp.ClientXMPP):
         self.add_event_handler("presence", self.handle_presence)
 
         # Group chat message handler.
-        self.add_event_handler("groupchat_message", self.chatroom_message)
+        self.add_event_handler("groupchat_message", self.message_received)
