@@ -24,7 +24,7 @@ class Client(slixmpp.ClientXMPP):
         self.register_all_handlers()
 
     # Async function that starts the client.
-    async def start(self):
+    async def start(self, event):
         self.send_presence("chat", "Connected from Santiago's chat.")
         await self.get_roster()
         self.is_user_connected = True
@@ -37,7 +37,7 @@ class Client(slixmpp.ClientXMPP):
         while (self.is_user_connected):
 
             # Client"s menu and option input.
-            print("Chat Options:\n\t1. Show all my contacts.\n\t2. Show a contact info.\n\t3. Send contact request.\n\t4. Send a DM.\n\t5. Send a group message.\n\t8. Sign out.\n")
+            print("Chat Options:\n\t1. Show all my contacts.\n\t2. Show a contact info.\n\t3. Send contact request.\n\t4. Send a DM.\n\t5. Send a group message.\n\t6. Update your presence.\n\t8. Sign out.\n")
             selected_option = input("Please input the option you want to execute: ")
 
             # Option to show all contacts.
@@ -66,12 +66,16 @@ class Client(slixmpp.ClientXMPP):
                     group_to_create = input("Please input the group's name: ")
                     await self.create_group(group_to_create)
 
+                elif (group_option == "2"):
+                    group_to_join = input("Please input the group's name: ")
+                    await self.join_group(group_to_join)
+
                 elif (group_option == "3"):
                     continue
 
             # Option to change presence status and message.
             elif (selected_option == "6"):
-                raise NotImplementedError()
+                await self.update_presence()
 
             # Option to send a file to a contact.
             elif (selected_option == "7"):
@@ -85,19 +89,6 @@ class Client(slixmpp.ClientXMPP):
             # If no correct option was picked, it shows.
             else:
                 print("\nYou have not picked a correct option.\n")
-
-    # Async function that handles message reception.
-    async def receive_message(self, message):
-
-        # Check it the message is actually a chat message.
-        if (message["type"] == "chat"):
-
-            emitter = message["from"]
-
-            if (emitter == self.current_chatting_jid):
-                print(f"{emitter}: {message['body']}")
-            else:
-                print(f"New message from {emitter}.")
 
     # Async function to show all contacts.
     async def show_all_contacts(self):
@@ -135,7 +126,7 @@ class Client(slixmpp.ClientXMPP):
 
             # Show contact's results.
             print(f"Contact presence: {presence_value}")
-            print(f"Contact status: {status}")
+            print(f"Contact status: {status}\n")
 
     # Async function to show a contact by JID.
     async def show_contact_info(self):
@@ -181,7 +172,7 @@ class Client(slixmpp.ClientXMPP):
 
                 # Show contact's results.
                 print(f"Contact presence: {presence_value}")
-                print(f"Contact status: {status}")
+                print(f"Contact status: {status}\n")
 
         # Text that shows if the contact was not found.
         if (not found):
@@ -211,7 +202,7 @@ class Client(slixmpp.ClientXMPP):
         # While loop to keep chatting.
         while (True):
 
-            # Async input to wait for the user"s message.
+            # Async input to wait for the user's message.
             message = await ainput("Type your message: ")
 
             # Message "exit" if user quits chatting.
@@ -219,10 +210,24 @@ class Client(slixmpp.ClientXMPP):
                 self.current_chatting_jid = ""
                 break
 
-            # Send the message if it"s not the "exit" keyword.
+            # Send the message if it's not the "exit" keyword.
             else:
-                print(f"{self.user_jid.split('@')[0]}: {message}")
+                print(f"{self.logged_user.split('@')[0]}: {message}")
                 self.send_message(mto=dm_to_jid, mbody=message, mtype="chat")
+
+    # Async function that handles message reception.
+    async def receive_message(self, message):
+
+        # Check it the message is actually a chat message.
+        if (message["type"] == "chat"):
+
+            emitter = str(message["from"])
+            actual_emitter = emitter.split("/")[0]
+
+            if (actual_emitter == self.current_chatting_jid):
+                print(f"\n{actual_emitter}: {message['body']}")
+            else:
+                print(f"\nNew message from {actual_emitter}.")
 
     # Async function to create a group chat.
     async def create_group(self, group_name):
@@ -274,6 +279,31 @@ class Client(slixmpp.ClientXMPP):
             else:
                 print(f"{self.logged_user.split('@')[0]}: {message}")
                 self.send_message(mto=group_name, mbody=message, mtype="groupchat")
+
+    # Async function to update your presence in the chat.
+    async def update_presence(self):
+
+        # Status state to show its respective color.
+        status = input("\nPresence options:\n\t1. Available\n\t2. Idle\n\t3. Busy\n\t4. Do Not Disturb\n\nChoose your option: ")
+
+        # Conditions to change the status color.
+        if (status == "1"):
+            presence = "chat"
+        elif (status == "2"):
+            presence = "away"
+        elif (status == "3"):
+            presence = "xa"
+        elif (status == "4"):
+            presence = "dnd"
+        else:
+            presence = "chat"
+
+        # Input to enter your description message.
+        description = input("Now please input your description message: ")
+
+        # Updating the user's presence.
+        self.send_presence(pshow=presence, pstatus=description) 
+        await self.get_roster() 
 
     # Function that registers all needed plugins.
     def register_all_plugins(self):
