@@ -258,6 +258,11 @@ class Client(slixmpp.ClientXMPP):
             else:
                 print(f"\n<!> {actual_boundjid} is {state}.\n")
 
+    # Function to send a custom failed auth message.
+    def failed_auth(self, event):
+        self.disconnect()
+        print("\nThe account you tried to sign in doesn't exist.\n")
+
     # Async function to notify a group's message.
     async def message_received(self, message):
 
@@ -374,6 +379,9 @@ class Client(slixmpp.ClientXMPP):
 
         # Session start event handler.
         self.add_event_handler("session_start", self.start)
+
+        # Failed auth event handler.
+        self.add_event_handler("failed_auth", self.failed_auth)
 
         # Message event handler.
         self.add_event_handler("message", self.receive_message)
