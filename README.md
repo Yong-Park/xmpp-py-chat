@@ -9,20 +9,20 @@ Welcome to `xmpp-py-chat`. The Asynchronous XMPP Client project aims to create a
 This project consisted on developing a lot of cool and useful features that any chat that implements the XMPP protocol. They will be mentioned on the following list.
 
 Account administration:
-[x] Sign up
-[x] Sign in
-[x] Logout
-[x] Account deletion
+- [x] Sign up
+- [x] Sign in
+- [x] Logout
+- [x] Account deletion
 
 Communication:
-[x] Show all contacts
-[x] Show contact info
-[x] Add new contacts
-[x] Direct communication
-[x] Group communication
-[x] Presence update
-[x] Notifications
-[x] File messages
+- [x] Show all contacts
+- [x] Show contact info
+- [x] Add new contacts
+- [x] Direct communication
+- [x] Group communication
+- [x] Presence update
+- [x] Notifications
+- [x] File messages
 
 ### Instalation.
 
