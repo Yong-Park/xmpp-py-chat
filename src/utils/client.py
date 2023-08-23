@@ -26,7 +26,7 @@ class Client(slixmpp.ClientXMPP):
 
     # Async function that starts the client.
     async def start(self, event):
-        self.send_presence("chat", "Connected from Santiago's chat.")
+        self.send_presence(pshow="chat", pstatus="Connected from Santiago's chat.")
         await self.get_roster()
         self.is_user_connected = True
         asyncio.create_task(self.process_action())
