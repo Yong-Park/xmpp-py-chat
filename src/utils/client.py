@@ -407,6 +407,8 @@ class Client(slixmpp.ClientXMPP):
 
         # Plugin used to access out of band data.
         self.register_plugin("xep_0066")
+
+        # Plugin used to send files.
         self.register_plugin("xep_0363")
 
     # Function that registers all needed handlers.
