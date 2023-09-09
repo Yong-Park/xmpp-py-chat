@@ -33,6 +33,7 @@ if (__name__ == "__main__"):
         # First case, to sign up into the class' server.
         if (selected_option == "1"):
             jid = input("\nInput your new JID please: ")
+            jid = jid + "@alumchat.xyz"
             password = input("Now please input your new password: ")
             status = register_new_user(jid, password)
             status_message = "\nYour sign up has been succesful!\n" if (status) else "\nYour sign up has thrown an error...\n"
@@ -41,6 +42,7 @@ if (__name__ == "__main__"):
         # Second case, to sign in into the class' server.
         elif (selected_option == "2"):
             jid = input("\nInput your JID please: ")
+            jid = jid + "@alumchat.xyz"
             password = input("Now please input your password: ")
             xmpp_client = Client(jid, password)
             xmpp_client.connect(disable_starttls=True, use_ssl=False)
