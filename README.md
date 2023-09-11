@@ -54,3 +54,8 @@ The most challenging aspect of developing this project was undoubtedly navigatin
 ### Learned lessons.
 
 Overall, this project provided a comprehensive education in asynchronous programming techniques, protocol integration, and user-centered design, leaving me better equipped to tackle complex, real-time applications in the future. I really learned a lot about asynchronous programming and libraries like asyncio, and even it was the toughest part to implement I think I really learned a lot about it and that's really valuable to me.
+
+
+### How to run the flooding code in this one
+
+Once you loggin, you the option 8 will be displayed called, Send messeage to another node (user). In which after pressing 8 and enter. It will ask you to write the jid user to send it to. In which later it wil ask the message that you want to send it. After that just press Enter, and you will be able to see for the user jid the poped message. For this case its necesary that all the user jids in this case lets represent them as nodes, to be connected, else for the logig that flooding contains it will not be able to send the data to the other nodes, since one of them that its a road to get to the node destination is not online, the message it will never arrive, until that node gets online. 

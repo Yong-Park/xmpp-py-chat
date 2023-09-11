@@ -2,6 +2,8 @@
 Universidad del Valle de Guatemala
 (CC3067) Redes
 Santiago Taracena Puga (20017)
+Yongbum Park (20117)
+Oscar Fernando Lopez (20679)
 Proyecto 1 - Protocolo XMPP
 """
 
@@ -10,10 +12,12 @@ import slixmpp
 import asyncio
 import base64
 from aioconsole import ainput
+import json
+
 
 # Client class definition (with slixmpp.ClientXMPP).
 class Client(slixmpp.ClientXMPP):
-
+    
     # Constructor method.
     def __init__(self, jid, password):
         super().__init__(jid=jid, password=password)
@@ -21,6 +25,12 @@ class Client(slixmpp.ClientXMPP):
         self.current_chatting_jid = ""
         self.is_user_connected = False
         self.group = ""
+        self.last_recieved_message = ""
+        self.last_recieved_user = ""
+        self.lock = asyncio.Lock()
+
+        self.add_event_handler("session_start", self.start)
+
         self.register_all_plugins()
         self.register_all_handlers()
 
@@ -30,66 +40,72 @@ class Client(slixmpp.ClientXMPP):
         await self.get_roster()
         self.is_user_connected = True
         asyncio.create_task(self.process_action())
+        
 
     # Async function to display the client's menu and process actions.
     async def process_action(self):
 
         # While loop to display the menu while the user is connected.
         while (self.is_user_connected):
+            async with self.lock:
 
-            # Client"s menu and option input.
-            print("\nChat Options:\n\t1. Show all my contacts.\n\t2. Show a contact info.\n\t3. Send contact request.\n\t4. Send a DM.\n\t5. Send a group message.\n\t6. Update your presence.\n\t7. Send a file message.\n\t8. Sign out.\n")
-            selected_option = input("Please input the option you want to execute: ")
+                # Client"s menu and option input.
+                print("\nChat Options:\n\t1. Show all my contacts.\n\t2. Show a contact info.\n\t3. Send contact request.\n\t4. Send a DM.\n\t5. Send a group message.\n\t6. Update your presence.\n\t7. Send a file message.\n\t8. Send messeage to another node (user)\n\t9. Sign out.\n")
+                selected_option = await ainput("Please input the option you want to execute: ")
 
-            # Option to show all contacts.
-            if (selected_option == "1"):
-                await self.show_all_contacts()
+                # Option to show all contacts.
+                if (selected_option == "1"):
+                    await self.show_all_contacts()
 
-            # Option to show a specific contact.
-            elif (selected_option == "2"):
-                await self.show_contact_info()
+                # Option to show a specific contact.
+                elif (selected_option == "2"):
+                    await self.show_contact_info()
 
-            # Option to send a contact request to a user.
-            elif (selected_option == "3"):
-                await self.send_contact_request()
+                # Option to send a contact request to a user.
+                elif (selected_option == "3"):
+                    await self.send_contact_request()
 
-            # Option to send a DM to a user.
-            elif (selected_option == "4"):
-                await self.send_dm()
+                # Option to send a DM to a user.
+                elif (selected_option == "4"):
+                    await self.send_dm()
 
-            # Option to send a message on a groupal chat.
-            elif (selected_option == "5"):
+                # Option to send a message on a groupal chat.
+                elif (selected_option == "5"):
 
-                print("\nGroup Chat Options:\n\t1. Create group.\n\t2. Join group.\n\t3. Exit.\n")
-                group_option = input("Please input the option you want to execute: ")
+                    print("\nGroup Chat Options:\n\t1. Create group.\n\t2. Join group.\n\t3. Exit.\n")
+                    group_option = input("Please input the option you want to execute: ")
 
-                if (group_option == "1"):
-                    group_to_create = input("Please input the group's name: ")
-                    await self.create_group(group_to_create)
+                    if (group_option == "1"):
+                        group_to_create = input("Please input the group's name: ")
+                        await self.create_group(group_to_create)
 
-                elif (group_option == "2"):
-                    group_to_join = input("Please input the group's name: ")
-                    await self.join_group(group_to_join)
+                    elif (group_option == "2"):
+                        group_to_join = input("Please input the group's name: ")
+                        await self.join_group(group_to_join)
 
-                elif (group_option == "3"):
-                    continue
+                    elif (group_option == "3"):
+                        continue
 
-            # Option to change presence status and message.
-            elif (selected_option == "6"):
-                await self.update_presence()
+                # Option to change presence status and message.
+                elif (selected_option == "6"):
+                    await self.update_presence()
 
-            # Option to send a file to a contact.
-            elif (selected_option == "7"):
-                await self.send_file()
+                # Option to send a file to a contact.
+                elif (selected_option == "7"):
+                    await self.send_file()
+                    
+                # Option to send a message with the structure of a json file.
+                elif (selected_option == "8"):
+                    await self.send_json_file()
 
-            # Option to disconnect from the session.
-            elif (selected_option == "8"):
-                self.disconnect()
-                self.is_user_connected = False
+                # Option to disconnect from the session.
+                elif (selected_option == "9"):
+                    self.disconnect()
+                    self.is_user_connected = False
 
-            # If no correct option was picked, it shows.
-            else:
-                print("\nYou have not picked a correct option.\n")
+                # If no correct option was picked, it shows.
+                else:
+                    print("\nYou have not picked a correct option.\n")
 
     # Async function to show all contacts.
     async def show_all_contacts(self):
@@ -134,6 +150,7 @@ class Client(slixmpp.ClientXMPP):
 
         # Input to get the JID to request.
         contact_jid = input("Input the contact's JID please: ")
+        contact_jid = contact_jid + "@alumchat.xyz"
 
         # Client roster containing the contacts.
         client_roster = self.client_roster
@@ -184,6 +201,7 @@ class Client(slixmpp.ClientXMPP):
 
         # Input to get the new contact"s JID.
         contact_jid = input("Input your new contact's JID please: ")
+        contact_jid = contact_jid + "@alumchat.xyz"
 
         # Process to send a presence subscription.
         self.send_presence_subscription(contact_jid)
@@ -195,6 +213,7 @@ class Client(slixmpp.ClientXMPP):
 
         # Input for the JID to send a DM to.
         dm_to_jid = input("Please input the JID of the user you want to send a DM: ")
+        dm_to_jid = dm_to_jid + "@alumchat.xyz"
         self.current_chatting_jid = dm_to_jid
 
         # Show information about the chat.
@@ -215,12 +234,82 @@ class Client(slixmpp.ClientXMPP):
             else:
                 print(f"{self.logged_user.split('@')[0]}: {message}")
                 self.send_message(mto=dm_to_jid, mbody=message, mtype="chat")
+                
+    # Async function to send a json struct file.
+    async def send_json_file(self):
+        # Save the full JID of the current user
+        from_jid = self.logged_user.split('/')[0]
+        
+        # Ask for the JID of the recipient and the message to send
+        to_jid = input("Enter the JID of the recipient: ")
+        while to_jid == "":
+            to_jid = input("Please Enter the JID of the recipient: ")
+        to_jid = to_jid + "@alumchat.xyz"
+        message = input("Enter the message to send: ")
+
+        # Construct the JSON data structure
+        json_data = {
+            'type': 'message',
+            'headers': {
+                'from': from_jid,
+                'to': to_jid,
+                'visitedNodes': [from_jid]
+            },
+            'payload': message
+        }
+
+        # Convert the data structure to a JSON string and print it
+        json_string = json.dumps(json_data, indent=4)
+        # print(json_string)
+        # print("json type: ",type(json_string))
+        
+        # Send the json_string to each contact that the user has
+        for contact in self.client_roster.keys():
+            if contact != from_jid:
+                # print("contact: ",contact)
+                # print("Sending the info")
+                self.send_message(mto=contact, mbody=json_string, mtype="json")
+
 
     # Async function that handles message reception.
     async def receive_message(self, message):
+        # print("message: ",message)
+        # print(f"Message type: {message['type']}")
 
-        # Check it the message is actually a chat message.
-        if (message["type"] == "chat"):
+         # Check it the message is actually a chat message.
+        if (message["type"] == "normal"):
+            from_jid = self.logged_user.split('/')[0]
+            # Parse the json string
+            # print("json recieved")
+            json_data = json.loads(message['body'])
+            # print(json_data)
+            # Checks if the user is the destination
+            if from_jid == str(json_data["headers"]["to"]):
+                # Checks if its a message that has already recieved
+                if self.last_recieved_message != json_data["payload"] and self.last_recieved_user != json_data["headers"]["from"]:
+                    self.last_recieved_message = json_data["payload"]
+                    self.last_recieved_user = json_data["headers"]["from"]
+                    print("from: ", json_data["headers"]["from"], "\nmessage: ", json_data["payload"])
+            else:
+                #Checks if the user hast not recieved the message
+                if from_jid not in json_data["headers"]["visitedNodes"]:
+                    json_data["headers"]["visitedNodes"].append(self.logged_user.split('/')[0])
+                    #send it to all the other contacts that this user has
+                    json_string = json.dumps(json_data, indent=4)
+                    # print(json_string)
+                    # print("json type: ",type(json_string))
+                    
+                    # Send the json_string to each contact that the user has
+                    for contact in self.client_roster.keys():
+                        if contact != from_jid:
+                            # print("contact: ",contact)
+                            # print("Sending the info")
+                            self.send_message(mto=contact, mbody=json_string, mtype="json")
+            
+            
+        # Process the json data...
+        
+        elif (message["type"] == "chat"):
 
             # Decoding and saving a file if the message contains it.
             if (message["body"].startswith("file://")):
@@ -244,6 +333,7 @@ class Client(slixmpp.ClientXMPP):
                     print(f"\n\n{actual_emitter}: {message['body']}")
                 else:
                     print(f"\n<!> New message from {actual_emitter}.\n")
+
 
     # Async function to handle user's presence.
     async def handle_presence(self, presence):
@@ -364,7 +454,7 @@ class Client(slixmpp.ClientXMPP):
         # Updating the user's presence.
         self.send_presence(pshow=presence, pstatus=description) 
         await self.get_roster() 
-
+                
     # Async function to send a file.
     async def send_file(self):
 

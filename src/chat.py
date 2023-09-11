@@ -2,6 +2,8 @@
 Universidad del Valle de Guatemala
 (CC3067) Redes
 Santiago Taracena Puga (20017)
+Yongbum Park (20117)
+Oscar Fernando Lopez (20679)
 Proyecto 1 - Protocolo XMPP
 """
 
@@ -51,6 +53,7 @@ if (__name__ == "__main__"):
         # Third case, to log out the class' server.
         elif (selected_option == "3"):
             print("\nSee you soon!\n")
+
 
         # Fourth case, to delete an account.
         elif (selected_option == "4"):

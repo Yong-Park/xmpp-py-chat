@@ -2,6 +2,8 @@
 Universidad del Valle de Guatemala
 (CC3067) Redes
 Santiago Taracena Puga (20017)
+Yongbum Park (20117)
+Oscar Fernando Lopez (20679)
 Proyecto 1 - Protocolo XMPP
 """
 
